@@ -21,6 +21,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
     //Events
     event AssestListed(address indexed seller, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
     event AssestBought(address indexed buyer, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
+    event AssestCanceled(address indexed seller,address indexed assestAddress,uint256 indexed tokenId);
 
     mapping(address => mapping(uint256 => Listing)) private listings;
     mapping(address => uint256) private proceeds;
@@ -83,5 +84,15 @@ contract RealEstateMarketplace is ReentrancyGuard {
         delete(listings[assestAddress][tokenId]);
         IERC721(assestAddress).safeTransferFrom(listedAssest.seller, msg.sender, tokenId);
         emit AssestBought(msg.sender, assestAddress, tokenId, listedAssest.price);
+    }
+
+    function cancelListing(address assestAddress,uint256 tokenId) external isOwner(assestAddress, tokenId, msg.sender){
+        delete(listings[assestAddress][tokenId]);
+        emit AssestCanceled(msg.sender,assestAddress,tokenId);
+    }
+
+    function updateListing(address assestAddress,uint256 tokenId,uint256 newPrice) isOwner(assestAddress, tokenId, msg.sender){
+        listings[assestAddress][tokenId].price=newPrice;
+        emit ItemListed(msg.sender,assestAddress,tokenId,newPrice);
     }
 }
