@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 error RealEstateMarketplace__PriceMustnotBeZero();
 error RealEstateMarketplace__NotApprovedForMarketplace();
 error RealEstateMarketplace__AlreadyListed(address assestAddress, uint256 tokenId);
+error RealEstateMarketplace__NotOwner();
 
 contract RealEstateMarketplace {
     struct Listing {
@@ -28,9 +29,19 @@ contract RealEstateMarketplace {
         _;
     }
 
+    modifier isOwner(address assestAddress, uint256 tokenId, address spender) {
+        IERC721 assest = IERC721(assestAddress);
+        address owner = assest.ownerOf(tokenId);
+        if (spender != owner) {
+            revert RealEstateMarketplace__NotOwner();
+        }
+        _;
+    }
+
     function listAssest(address assestAddress, uint256 tokenId, uint256 price)
         external
         notListed(assestAddress, tokenId, msg.sender)
+        isOwner(assestAddress, tokenId, msg.sender)
     {
         if (price <= 0) {
             revert RealEstateMarketplace__PriceMustnotBeZero();
