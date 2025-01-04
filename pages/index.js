@@ -8,10 +8,9 @@ import { useQuery } from "@apollo/client"
 export default function Home() {
     const { chainId, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : null
-    const marketplaceAddress = chainId
-        ? networkMapping[chainString].RealEstateMarketplace[0]
-        : null
-    const assestAddress = chainId ? networkMapping[chainString].Assest[0] : null
+    let realEstateMarketplaceAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+
+    let assestAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
     const { loading, error, data: listedNfts } = useQuery(GET_ACTIVE_ITEMS)
 
@@ -19,21 +18,20 @@ export default function Home() {
         <div className="container mx-auto">
             <h1 className="py-4 px-4 font-bold text-2xl">Recently Listed</h1>
             <div className="flex flex-wrap">
-                {isWeb3Enabled && chainId ? (
+                {isWeb3Enabled ? (
                     loading || !listedNfts ? (
                         <div>Loading...</div>
                     ) : (
                         listedNfts.activeItems.map((nft) => {
-                            const { price, nftAddress, tokenId, seller } = nft
+                            const { price, tokenId, seller } = nft
                             return marketplaceAddress ? (
                                 <NFTBox
                                     price={price}
-                                    nftAddress={nftAddress}
                                     assestAddress={assestAddress}
                                     tokenId={tokenId}
-                                    marketplaceAddress={marketplaceAddress}
+                                    realEstateMarketplaceAddress={realEstateMarketplaceAddress}
                                     seller={seller}
-                                    key={`${nftAddress}${tokenId}`}
+                                    key={`${tokenId}`}
                                 />
                             ) : (
                                 <div>Network error, please switch to a supported network. </div>

@@ -37,12 +37,16 @@ export default function NFTBox({
     const hideModal = () => setShowModal(false)
     const dispatch = useNotification()
 
+    let realEstateMarketplaceAddress1 = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+
+    let assestAddress1 = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+
     const { runContractFunction: getTokenURI } = useWeb3Contract({
         abi: assestAbi,
-        contractAddress: assestAddress,
-        functionName: "tokenURI",
+        contractAddress: assestAddress1,
+        functionName: "getTokenUri",
         params: {
-            tokenId: tokenId,
+            tokenId: "2",
         },
     })
 
@@ -67,31 +71,39 @@ export default function NFTBox({
     })
 
     async function updateUI() {
-        const tokenURI = await getTokenURI()
-        console.log(`The TokenURI is ${tokenURI}`)
-        if (tokenURI) {
-            // IPFS Gateway: A server that will return IPFS files from a "normal" URL.
-            const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
-            const tokenURIResponse = await (await fetch(requestURL)).json()
-            const imageURI = tokenURIResponse.image
-            const imageURIURL = imageURI.replace("ipfs://", "https://ipfs.io/ipfs/")
-            setImageURI(imageURIURL)
-            setTokenName(tokenURIResponse.name)
-            setTokenDescription(tokenURIResponse.description)
-            // We could render the Image on our sever, and just call our sever.
-            // For testnets & mainnet -> use moralis server hooks
-            // Have the world adopt IPFS
-            // Build our own IPFS gateway
+        try {
+            console.log("Fetching token URI...")
+            const tokenURI = await getTokenURI()
+            console.log(`The TokenURI is ${tokenURI}`)
+
+            if (tokenURI) {
+                const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
+                const tokenURIResponse = await fetch(requestURL).then((res) => res.json())
+
+                if (tokenURIResponse) {
+                    const imageURI = tokenURIResponse.image
+                    const imageURIURL = imageURI.replace("ipfs://", "https://ipfs.io/ipfs/")
+                    setImageURI(imageURIURL)
+                    setTokenName(tokenURIResponse.name)
+                    setTokenDescription(tokenURIResponse.description)
+                } else {
+                    console.error("Failed to fetch tokenURIResponse")
+                }
+            }
+        } catch (error) {
+            console.error("Error in updateUI:", error)
         }
-        // get the tokenURI
-        // using the image tag from the tokenURI, get the image
     }
 
     useEffect(() => {
+        console.log("useEffect triggered")
         if (isWeb3Enabled) {
             updateUI()
+        } else {
+            console.log("Web3 is not enabled")
         }
     }, [isWeb3Enabled])
+    // Dependency array to avoid infinite loop
 
     const isOwnedByUser = seller === account || seller === undefined
     const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)

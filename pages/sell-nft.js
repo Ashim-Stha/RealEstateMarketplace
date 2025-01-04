@@ -258,6 +258,26 @@ export default function Home() {
                 text="approve"
                 type="button"
             />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: realEstateMarketplaceAbi,
+                            contractAddress: realEstateMarketplaceAddress,
+                            functionName: "listItem",
+                            params: {
+                                tokenId: "1",
+                                price: "1",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: () => handleWithdrawSuccess(),
+                    })
+                }}
+                text="listItem"
+                type="button"
+            />
         </div>
     )
 }
