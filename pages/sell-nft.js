@@ -87,6 +87,11 @@ export default function Home() {
         console.log("Returned Token IDs as Strings:", tokenIds)
     }
 
+    const handleGetTokenUri = (result) => {
+        const tokenIds = result.toString()
+        console.log("Returned Token IDs as Strings:", tokenIds)
+    }
+
     async function mintNft(tokenUri, citizenshipId) {
         const listOptions = {
             abi: assestAbi,
@@ -212,6 +217,45 @@ export default function Home() {
                     })
                 }}
                 text="getTokensByCitizenshipId"
+                type="button"
+            />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: assestAbi,
+                            contractAddress: assestAddress,
+                            functionName: "getTokenUri",
+                            params: {
+                                tokenId: "1",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: (result) => handleGetTokenUri(result),
+                    })
+                }}
+                text="getTokenUri"
+                type="button"
+            />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: assestAbi,
+                            contractAddress: assestAddress,
+                            functionName: "approve",
+                            params: {
+                                to: realEstateMarketplaceAddress,
+                                tokenId: "1",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: (result) => handleGetTokenUri(result),
+                    })
+                }}
+                text="getTokenUri"
                 type="button"
             />
         </div>
