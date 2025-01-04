@@ -99,6 +99,10 @@ contract RealEstateMarketplace is ReentrancyGuard {
         return listings[tokenId];
     }
 
+    function getProceeds(address seller) external view returns (uint256) {
+        return proceeds[seller];
+    }
+
     // Events
     event AssestListed(address indexed seller, uint256 indexed tokenId, uint256 price);
     event AssestBought(address indexed buyer, uint256 indexed tokenId, uint256 price);

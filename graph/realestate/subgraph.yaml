@@ -1,0 +1,30 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: RealEstateMarketplace
+    network: sepolia
+    source:
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+      abi: RealEstateMarketplace
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AssestBought
+        - AssestCanceled
+        - AssestListed
+      abis:
+        - name: RealEstateMarketplace
+          file: ./abis/RealEstateMarketplace.json
+      eventHandlers:
+        - event: AssestBought(indexed address,indexed uint256,uint256)
+          handler: handleAssestBought
+        - event: AssestCanceled(indexed address,indexed uint256)
+          handler: handleAssestCanceled
+        - event: AssestListed(indexed address,indexed uint256,uint256)
+          handler: handleAssestListed
+      file: ./src/real-estate-marketplace.ts
