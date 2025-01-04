@@ -1,7 +1,7 @@
 import { Modal, Input, useNotification } from "web3uikit"
 import { useState } from "react"
 import { useWeb3Contract } from "react-moralis"
-import nftMarketplaceAbi from "../constants/NftMarketplace.json"
+import realEstateMarketplaceAbi from "../constants/RealEstateMarketplace.json"
 import { ethers } from "ethers"
 
 export default function UpdateListingModal({
@@ -27,7 +27,7 @@ export default function UpdateListingModal({
     }
 
     const { runContractFunction: updateListing } = useWeb3Contract({
-        abi: nftMarketplaceAbi,
+        abi: realEstateMarketplaceAbi,
         contractAddress: marketplaceAddress,
         functionName: "updateListing",
         params: {
