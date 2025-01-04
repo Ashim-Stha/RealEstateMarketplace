@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -21,6 +21,8 @@ contract RealEstateMarketplace is ReentrancyGuard {
     IERC721 private immutable assestContract;
     mapping(uint256 => Listing) private listings;
     mapping(address => uint256) private proceeds;
+
+    uint256[] private listedTokenIds; // Array to track listed token IDs
 
     constructor(address _assestContract) {
         assestContract = IERC721(_assestContract);
@@ -48,7 +50,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
         _;
     }
 
-    function listAssest(uint256 tokenId, uint256 price) external notListed(tokenId) isOwner(tokenId, msg.sender) {
+    function listItem(uint256 tokenId, uint256 price) external notListed(tokenId) isOwner(tokenId, msg.sender) {
         if (price <= 0) {
             revert PriceMustBeAboveZero();
         }
@@ -58,10 +60,11 @@ contract RealEstateMarketplace is ReentrancyGuard {
         }
 
         listings[tokenId] = Listing(price, msg.sender);
-        emit AssestListed(msg.sender, tokenId, price);
+        listedTokenIds.push(tokenId); // Add to the array
+        emit ItemListed(msg.sender, tokenId, price);
     }
 
-    function buyAssest(uint256 tokenId) external payable nonReentrant isListed(tokenId) {
+    function buyItem(uint256 tokenId) external payable nonReentrant isListed(tokenId) {
         Listing memory listedAssest = listings[tokenId];
         if (msg.value < listedAssest.price) {
             revert PriceNotMet(tokenId, listedAssest.price);
@@ -69,19 +72,21 @@ contract RealEstateMarketplace is ReentrancyGuard {
 
         proceeds[listedAssest.seller] += msg.value;
         delete listings[tokenId];
+        _removeTokenId(tokenId); // Remove from the array
         assestContract.safeTransferFrom(listedAssest.seller, msg.sender, tokenId);
 
-        emit AssestBought(msg.sender, tokenId, listedAssest.price);
+        emit ItemBought(msg.sender, tokenId, listedAssest.price);
     }
 
     function cancelListing(uint256 tokenId) external isOwner(tokenId, msg.sender) {
         delete listings[tokenId];
-        emit AssestCanceled(msg.sender, tokenId);
+        _removeTokenId(tokenId); // Remove from the array
+        emit ItemCanceled(msg.sender, tokenId);
     }
 
     function updateListing(uint256 tokenId, uint256 newPrice) external isOwner(tokenId, msg.sender) {
         listings[tokenId].price = newPrice;
-        emit AssestListed(msg.sender, tokenId, newPrice);
+        emit ItemListed(msg.sender, tokenId, newPrice);
     }
 
     function withdrawProceeds() external {
@@ -103,8 +108,33 @@ contract RealEstateMarketplace is ReentrancyGuard {
         return proceeds[seller];
     }
 
+    function getAllListedItems() external view returns (Listing[] memory) {
+        uint256 totalListed = listedTokenIds.length;
+        Listing[] memory allListings = new Listing[](totalListed);
+
+        for (uint256 i = 0; i < totalListed; i++) {
+            uint256 tokenId = listedTokenIds[i];
+            allListings[i] = listings[tokenId];
+        }
+
+        return allListings;
+    }
+
+    // Internal function to remove a tokenId from the array
+    function _removeTokenId(uint256 tokenId) internal {
+        uint256 totalListed = listedTokenIds.length;
+
+        for (uint256 i = 0; i < totalListed; i++) {
+            if (listedTokenIds[i] == tokenId) {
+                listedTokenIds[i] = listedTokenIds[totalListed - 1];
+                listedTokenIds.pop();
+                break;
+            }
+        }
+    }
+
     // Events
-    event AssestListed(address indexed seller, uint256 indexed tokenId, uint256 price);
-    event AssestBought(address indexed buyer, uint256 indexed tokenId, uint256 price);
-    event AssestCanceled(address indexed seller, uint256 indexed tokenId);
+    event ItemListed(address indexed seller, uint256 indexed tokenId, uint256 price);
+    event ItemBought(address indexed buyer, uint256 indexed tokenId, uint256 price);
+    event ItemCanceled(address indexed seller, uint256 indexed tokenId);
 }
