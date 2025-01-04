@@ -21,7 +21,7 @@ const OwnerDetailForm = () => {
             identityNumberValid &&
             lalPurjaNumberValid &&
             areaValid &&
-            identityPhoto &&
+            // identityPhoto &&
             lalPurjaPhoto
         )
     }
@@ -34,20 +34,15 @@ const OwnerDetailForm = () => {
             return
         }
 
-        // Create FormData object to handle file uploads and other form data
+        // Prepare FormData object
         const formData = new FormData()
-        formData.append("ownerName", ownerName)
-        formData.append("identityNumber", identityNumber)
-        formData.append("location", location)
-        formData.append("lalPurjaNumber", lalPurjaNumber)
-        formData.append("area", area)
-        formData.append("identityPhoto", identityPhoto)
-        formData.append("lalPurjaPhoto", lalPurjaPhoto)
-
+        formData.append("name", ownerName) // Add ownerName
+        formData.append("description", location) // Add description
+        formData.append("front", lalPurjaPhoto) // Add Lal Purja Photo
         try {
-            const response = await fetch("https://localhost:5000/upload", {
+            const response = await fetch("http://localhost:5000/upload", {
                 method: "POST",
-                body: lalPurjaPhoto,
+                body: formData,
             })
 
             if (!response.ok) {
@@ -97,7 +92,6 @@ const OwnerDetailForm = () => {
                                     />
                                 </div>
                             </div>
-
                             <div className="sm:col-span-4">
                                 <label
                                     htmlFor="identityNumber"
@@ -118,7 +112,7 @@ const OwnerDetailForm = () => {
                                 </div>
                             </div>
 
-                            <div className="col-span-full">
+                            {/* <div className="col-span-full">
                                 <label
                                     htmlFor="identityPhoto"
                                     className="block text-sm font-medium text-gray-900"
@@ -155,7 +149,7 @@ const OwnerDetailForm = () => {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className="sm:col-span-4">
                                 <label
@@ -204,7 +198,15 @@ const OwnerDetailForm = () => {
                                 >
                                     Lal Purja Photo
                                 </label>
-                                <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                                <div
+                                    className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
+                                    onDragOver={(e) => e.preventDefault()} // Prevent default to allow drop
+                                    onDrop={(e) => {
+                                        e.preventDefault()
+                                        const file = e.dataTransfer.files[0] // Get the dropped file
+                                        setLalPurjaPhoto(file)
+                                    }}
+                                >
                                     <div className="text-center flex flex-col items-center">
                                         <PhotoIcon
                                             aria-hidden="true"
@@ -232,6 +234,11 @@ const OwnerDetailForm = () => {
                                         <p className="text-xs text-gray-600">
                                             PNG, JPG, GIF up to 10MB
                                         </p>
+                                        {lalPurjaPhoto && (
+                                            <p className="text-sm text-green-600 mt-2">
+                                                {`Selected: ${lalPurjaPhoto.name}`}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
