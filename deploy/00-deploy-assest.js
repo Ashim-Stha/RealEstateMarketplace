@@ -20,7 +20,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     process.env.ETHERSCAN_API_KEY
   ) {
     log("Verifying.........");
-    await verify(citizenship.address, args);
+    await verify(assest.address, args);
   }
 };
 
