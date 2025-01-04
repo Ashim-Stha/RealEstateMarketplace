@@ -133,68 +133,103 @@ export default function Home() {
 
     return (
         <div className={styles.container}>
-            <Form
-                onSubmit={approveAndList}
-                data={[
-                    {
-                        name: "NFT Address",
-                        type: "text",
-                        inputWidth: "50%",
-                        value: "",
-                        key: "assestAddress",
-                    },
-                    {
-                        name: "Token ID",
-                        type: "number",
-                        value: "",
-                        key: "tokenId",
-                    },
-                    {
-                        name: "Price (in ETH)",
-                        type: "number",
-                        value: "",
-                        key: "price",
-                    },
-                ]}
-                title="Sell your NFT!"
-                id="Main Form"
-            />
-            <div>Withdraw {proceeds} proceeds</div>
+            <div className="mt-4">
+                <form onSubmit={approveAndList} className="flex flex-col space-y-4">
+                    <div className="mt-2">
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            required
+                            placeholder="Enter your name"
+                            className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                        />
+                    </div>
+                    <div className="mt-2">
+                        <input
+                            id="price"
+                            name="price"
+                            type="number"
+                            required
+                            placeholder="Enter price in ETH"
+                            className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                        />
+                    </div>
+                    <div className="mt-2">
+                        <input
+                            id="location"
+                            name="location"
+                            type="text"
+                            required
+                            placeholder="Enter location"
+                            className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                        />
+                    </div>
+                    <div className="mt-2">
+                        <input
+                            id="certificationId"
+                            name="certificationId"
+                            type="text"
+                            required
+                            placeholder="Enter certification ID"
+                            className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                        />
+                    </div>
+                    <div className="mt-2">
+                        <input
+                            id="tokenId"
+                            name="tokenId"
+                            type="number"
+                            required
+                            placeholder="Enter token ID"
+                            className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                        />
+                    </div>
+                    <button type="submit" className="mt-4 bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700 transition duration-200 ease-in-out">
+                        Submit
+                    </button>
+                </form>
+            </div>
+            <div className="mt-4 text-lg font-semibold text-gray-900">Withdraw {proceeds} proceeds</div>
             {proceeds != "0" ? (
                 <Button
                     onClick={() => {
+                        const enteredAbi = document.getElementById("abiInput").value;
                         runContractFunction({
                             params: {
-                                abi: realEstateMarketplaceAbi,
+                                abi: enteredAbi,
                                 contractAddress: realEstateMarketplaceAddress,
                                 functionName: "withdrawProceeds",
                                 params: {},
                             },
                             onError: (error) => console.log(error),
-                            onSuccess: () => handleWithdrawSuccess,
+                            onSuccess: () => handleWithdrawSuccess(),
                         })
                     }}
                     text="Withdraw"
                     type="button"
+                    className="mt-4 bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700 transition duration-200 ease-in-out"
                 />
             ) : (
-                <div>No proceeds detected</div>
+                <div className="mt-4 text-red-600">No proceeds detected</div>
             )}
 
             <Button
                 onClick={() => {
+                    const tokenUri = document.getElementById("name").value;
+                    const citizenshipId = document.getElementById("certificationId").value;
                     runContractFunction({
                         params: {
                             abi: assestAbi,
                             contractAddress: assestAddress,
                             functionName: "mintNft",
                             params: {
-                                tokenUri: "ashim",
-                                citizenshipId: "7",
+                                tokenUri: tokenUri,
+                                citizenshipId: citizenshipId,
                             },
                         },
                         onError: (error) => console.log(error),
-                        onSuccess: () => handleWithdrawSuccess,
+                        onSuccess: () => handleWithdrawSuccess(),
                     })
                 }}
                 text="mintNft"
@@ -220,15 +255,16 @@ export default function Home() {
                 type="button"
             />
 
-            <Button
+<Button
                 onClick={() => {
+                    const tokenId = document.getElementById("tokenId").value; // Get tokenId from input
                     runContractFunction({
                         params: {
                             abi: assestAbi,
                             contractAddress: assestAddress,
                             functionName: "getTokenUri",
                             params: {
-                                tokenId: "1",
+                                tokenId: tokenId, // Use the retrieved tokenId
                             },
                         },
                         onError: (error) => console.log(error),
@@ -241,14 +277,15 @@ export default function Home() {
 
             <Button
                 onClick={() => {
+                    const tokenId = document.getElementById("tokenId").value; // Get tokenId from input
                     runContractFunction({
                         params: {
                             abi: assestAbi,
                             contractAddress: assestAddress,
                             functionName: "approve",
                             params: {
-                                to: realEstateMarketplaceAddress,
-                                tokenId: "1",
+                                to: add, // Updated to use 'add'
+                                tokenId: tokenId, // Updated to use the entered tokenId
                             },
                         },
                         onError: (error) => console.log(error),
@@ -256,85 +293,6 @@ export default function Home() {
                     })
                 }}
                 text="approve"
-                type="button"
-            />
-
-            <Button
-                onClick={() => {
-                    runContractFunction({
-                        params: {
-                            abi: realEstateMarketplaceAbi,
-                            contractAddress: realEstateMarketplaceAddress,
-                            functionName: "listItem",
-                            params: {
-                                tokenId: "1",
-                                price: "1",
-                            },
-                        },
-                        onError: (error) => console.log(error),
-                        onSuccess: () => handleWithdrawSuccess(),
-                    })
-                }}
-                text="listItem"
-                type="button"
-            />
-
-            <Button
-                onClick={() => {
-                    runContractFunction({
-                        params: {
-                            abi: realEstateMarketplaceAbi,
-                            contractAddress: realEstateMarketplaceAddress,
-                            functionName: "buyItem",
-                            msgValue: "1",
-                            params: {
-                                tokenId: "1",
-                            },
-                        },
-                        onError: (error) => console.log(error),
-                        onSuccess: () => handleWithdrawSuccess(),
-                    })
-                }}
-                text="buyItem"
-                type="button"
-            />
-
-            <Button
-                onClick={() => {
-                    runContractFunction({
-                        params: {
-                            abi: realEstateMarketplaceAbi,
-                            contractAddress: realEstateMarketplaceAddress,
-                            functionName: "cancelListing",
-                            params: {
-                                tokenId: "1",
-                            },
-                        },
-                        onError: (error) => console.log(error),
-                        onSuccess: () => handleWithdrawSuccess(),
-                    })
-                }}
-                text="cancelListing"
-                type="button"
-            />
-
-            <Button
-                onClick={() => {
-                    runContractFunction({
-                        params: {
-                            abi: realEstateMarketplaceAbi,
-                            contractAddress: realEstateMarketplaceAddress,
-                            functionName: "updateListing",
-                            params: {
-                                tokenId: "1",
-                                newPrice: "2",
-                            },
-                        },
-                        onError: (error) => console.log(error),
-                        onSuccess: () => handleWithdrawSuccess(),
-                    })
-                }}
-                text="cancelListing"
                 type="button"
             />
         </div>
