@@ -24,10 +24,9 @@ const truncateStr = (fullStr, strLen) => {
 
 export default function NFTBox({
     price,
-    nftAddress,
     assestAddress,
     tokenId,
-    marketplaceAddress,
+    realEstateMarketplaceAddress,
     seller,
 }) {
     const { isWeb3Enabled, account } = useMoralis()
@@ -47,23 +46,22 @@ export default function NFTBox({
         },
     })
 
-    const { runContractFunction: mintNft } = useWeb3Contract({
-        abi: assestAbi,
-        contractAddress: nftAddress,
-        functionName: "mintNft",
-        params: {
-            tokenUri: "ashim",
-            citizenshipId: 7,
-        },
-    })
+    // const { runContractFunction: mintNft } = useWeb3Contract({
+    //     abi: assestAbi,
+    //     contractAddress: nftAddress,
+    //     functionName: "mintNft",
+    //     params: {
+    //         tokenUri: "ashim",
+    //         citizenshipId: 7,
+    //     },
+    // })
 
-    const { runContractFunction: buyItem } = useWeb3Contract({
+    const { runContractFunction: buyAssest } = useWeb3Contract({
         abi: realEstateMarketplaceAbi,
-        contractAddress: marketplaceAddress,
-        functionName: "buyItem",
+        contractAddress: realEstateMarketplaceAddress,
+        functionName: "buyAssest",
         msgValue: price,
         params: {
-            nftAddress: nftAddress,
             tokenId: tokenId,
         },
     })
@@ -71,7 +69,6 @@ export default function NFTBox({
     async function updateUI() {
         const tokenURI = await getTokenURI()
         console.log(`The TokenURI is ${tokenURI}`)
-        // We are going to cheat a little here...
         if (tokenURI) {
             // IPFS Gateway: A server that will return IPFS files from a "normal" URL.
             const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
@@ -134,8 +131,7 @@ export default function NFTBox({
                         <UpdateListingModal
                             isVisible={showModal}
                             tokenId={tokenId}
-                            marketplaceAddress={marketplaceAddress}
-                            nftAddress={nftAddress}
+                            realEstateMarketplaceAddress={realEstateMarketplaceAddress}
                             onClose={hideModal}
                         />
                         <Card

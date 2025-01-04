@@ -4,15 +4,18 @@ import styles from "../styles/Home.module.css"
 import { Form, useNotification, Button } from "web3uikit"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { ethers } from "ethers"
-import nftAbi from "../constants/Assest.json"
-import nftMarketplaceAbi from "../constants/RealEstateMarketplace.json"
+import assestAbi from "../constants/Assest.json"
+import realEstateMarketplaceAbi from "../constants/RealEstateMarketplace.json"
 import networkMapping from "../constants/networkMapping.json"
 import { useEffect, useState } from "react"
 
 export default function Home() {
     const { chainId, account, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : "31337"
-    const marketplaceAddress = networkMapping[chainString].RealEstateMarketplace[0]
+    let realEstateMarketplaceAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+
+    let assestAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+
     const dispatch = useNotification()
     const [proceeds, setProceeds] = useState("0")
 
@@ -20,38 +23,37 @@ export default function Home() {
 
     async function approveAndList(data) {
         console.log("Approving...")
-        const nftAddress = data.data[0].inputResult
+        const assestAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         const tokenId = data.data[1].inputResult
         const price = ethers.utils.parseUnits(data.data[2].inputResult, "ether").toString()
 
         const approveOptions = {
-            abi: nftAbi,
-            contractAddress: nftAddress,
+            abi: assestAbi,
+            contractAddress: assestAddress,
             functionName: "approve",
             params: {
-                to: marketplaceAddress,
+                to: realEstateMarketplaceAddress,
                 tokenId: tokenId,
             },
         }
 
         await runContractFunction({
             params: approveOptions,
-            onSuccess: (tx) => handleApproveSuccess(tx, nftAddress, tokenId, price),
+            onSuccess: (tx) => handleApproveSuccess(tx, assestAddress, tokenId, price),
             onError: (error) => {
                 console.log(error)
             },
         })
     }
 
-    async function handleApproveSuccess(tx, nftAddress, tokenId, price) {
+    async function handleApproveSuccess(tx, assestAddress, tokenId, price) {
         console.log("Ok! Now time to list")
         await tx.wait()
         const listOptions = {
-            abi: nftMarketplaceAbi,
-            contractAddress: marketplaceAddress,
-            functionName: "listItem",
+            abi: realEstateMarketplaceAbi,
+            contractAddress: realEstateMarketplaceAddress,
+            functionName: "listAssest",
             params: {
-                nftAddress: nftAddress,
                 tokenId: tokenId,
                 price: price,
             },
@@ -80,12 +82,34 @@ export default function Home() {
             position: "topR",
         })
     }
+    const handleGetTokensSuccess = (result) => {
+        const tokenIds = result.map((tokenId) => tokenId.toString())
+        console.log("Returned Token IDs as Strings:", tokenIds)
+    }
+
+    async function mintNft(tokenUri, citizenshipId) {
+        const listOptions = {
+            abi: assestAbi,
+            contractAddress: assestAddresss,
+            functionName: "mintNft",
+            params: {
+                tokenUri: "ashim",
+                citizenshipId: "7",
+            },
+        }
+
+        await runContractFunction({
+            params: listOptions,
+            onSuccess: () => handleListSuccess(),
+            onError: (error) => console.log(error),
+        })
+    }
 
     async function setupUI() {
         const returnedProceeds = await runContractFunction({
             params: {
-                abi: nftMarketplaceAbi,
-                contractAddress: marketplaceAddress,
+                abi: realEstateMarketplaceAbi,
+                contractAddress: realEstateMarketplaceAddress,
                 functionName: "getProceeds",
                 params: {
                     seller: account,
@@ -112,7 +136,7 @@ export default function Home() {
                         type: "text",
                         inputWidth: "50%",
                         value: "",
-                        key: "nftAddress",
+                        key: "assestAddress",
                     },
                     {
                         name: "Token ID",
@@ -136,8 +160,8 @@ export default function Home() {
                     onClick={() => {
                         runContractFunction({
                             params: {
-                                abi: nftMarketplaceAbi,
-                                contractAddress: marketplaceAddress,
+                                abi: realEstateMarketplaceAbi,
+                                contractAddress: realEstateMarketplaceAddress,
                                 functionName: "withdrawProceeds",
                                 params: {},
                             },
@@ -151,6 +175,45 @@ export default function Home() {
             ) : (
                 <div>No proceeds detected</div>
             )}
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: assestAbi,
+                            contractAddress: assestAddress,
+                            functionName: "mintNft",
+                            params: {
+                                tokenUri: "ashim",
+                                citizenshipId: "7",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: () => handleWithdrawSuccess,
+                    })
+                }}
+                text="mintNft"
+                type="button"
+            />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: assestAbi,
+                            contractAddress: assestAddress,
+                            functionName: "getTokensByCitizenshipId",
+                            params: {
+                                citizenshipId: "7",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: (result) => handleGetTokensSuccess(result),
+                    })
+                }}
+                text="getTokensByCitizenshipId"
+                type="button"
+            />
         </div>
     )
 }
