@@ -47,7 +47,7 @@ const OwnerDetailForm = () => {
                                         value={ownerName}
                                         onChange={e => setOwnerName(e.target.value)}
                                         required
-                                        className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                                        className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
                                     />
                                 </div>
                             </div>
@@ -60,11 +60,11 @@ const OwnerDetailForm = () => {
                                     <input
                                         id="identityNumber"
                                         name="identityNumber"
-                                        type="text"
+                                        type="number"
                                         value={identityNumber}
                                         onChange={e => setIdentityNumber(e.target.value)}
                                         required
-                                        className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                                        className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
                                     />
                                 </div>
                             </div>
@@ -74,8 +74,8 @@ const OwnerDetailForm = () => {
                                     Photo of Identity
                                 </label>
                                 <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                                    <div className="text-center">
-                                        <UserCircleIcon aria-hidden="true" className="h-12 w-12 text-gray-300" />
+                                    <div className="text-center flex flex-col items-center">
+                                        <PhotoIcon aria-hidden="true" className="h-12 w-12 text-gray-300" />
                                         <div className="mt-4 flex text-sm text-gray-600">
                                             <label
                                                 htmlFor="identity-file-upload"
@@ -103,7 +103,7 @@ const OwnerDetailForm = () => {
                                         value={location}
                                         onChange={e => setLocation(e.target.value)}
                                         required
-                                        className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                                        className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
                                     />
                                 </div>
                             </div>
@@ -120,7 +120,7 @@ const OwnerDetailForm = () => {
                                         value={lalPurjaNumber}
                                         onChange={e => setLalPurjaNumber(e.target.value)}
                                         required
-                                        className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                                        className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
                                     />
                                 </div>
                             </div>
@@ -130,7 +130,7 @@ const OwnerDetailForm = () => {
                                     Lal Purja Photo
                                 </label>
                                 <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                                    <div className="text-center">
+                                    <div className="text-center flex flex-col items-center">
                                         <PhotoIcon aria-hidden="true" className="h-12 w-12 text-gray-300" />
                                         <div className="mt-4 flex text-sm text-gray-600">
                                             <label
@@ -159,7 +159,7 @@ const OwnerDetailForm = () => {
                                         value={area}
                                         onChange={e => setArea(e.target.value)}
                                         required
-                                        className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
+                                        className="block w-full rounded-md bg-white border border-gray-300 px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-2 focus:outline-indigo-600"
                                     />
                                 </div>
                             </div>
