@@ -1,17 +1,16 @@
 //SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-error RealEstateMarketplace__PriceMustnotBeZero();
-error RealEstateMarketplace__NotApprovedForMarketplace();
-error RealEstateMarketplace__AlreadyListed(address assestAddress, uint256 tokenId);
-error RealEstateMarketplace__NotOwner();
-error RealEstateMarketplace__NotListed(address assestAddress, uint256 tokenId);
-error RealEstateMarketplace__PriceNotMet(address assestAddress, uint256 tokenId, uint256 price);
-error RealEstateMarketplace__NoProceeds();
+error PriceMustBeAboveZero();
+error NotApprovedForMarketplace();
+error AlreadyListed(uint256 tokenId);
+error NotOwner();
+error NotListed(uint256 tokenId);
+error PriceNotMet(uint256 tokenId, uint256 price);
+error NoProceeds();
 
 contract RealEstateMarketplace is ReentrancyGuard {
     struct Listing {
@@ -19,101 +18,89 @@ contract RealEstateMarketplace is ReentrancyGuard {
         address seller;
     }
 
-    //Events
-    event AssestListed(address indexed seller, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
-    event AssestBought(address indexed buyer, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
-    event AssestCanceled(address indexed seller, address indexed assestAddress, uint256 indexed tokenId);
-
-    mapping(address => mapping(uint256 => Listing)) private listings;
+    IERC721 private immutable assestContract;
+    mapping(uint256 => Listing) private listings;
     mapping(address => uint256) private proceeds;
 
-    //modifier
-    modifier notListed(address assestAddress, uint256 tokenId, address owner) {
-        Listing memory listing = listings[assestAddress][tokenId];
-        if (listing.price > 0) {
-            revert RealEstateMarketplace__AlreadyListed(assestAddress, tokenId);
+    constructor(address _assestContract) {
+        assestContract = IERC721(_assestContract);
+    }
+
+    modifier notListed(uint256 tokenId) {
+        if (listings[tokenId].price > 0) {
+            revert AlreadyListed(tokenId);
         }
         _;
     }
 
-    modifier isOwner(address assestAddress, uint256 tokenId, address spender) {
-        IERC721 assest = IERC721(assestAddress);
-        address owner = assest.ownerOf(tokenId);
+    modifier isOwner(uint256 tokenId, address spender) {
+        address owner = assestContract.ownerOf(tokenId);
         if (spender != owner) {
-            revert RealEstateMarketplace__NotOwner();
+            revert NotOwner();
         }
         _;
     }
 
-    modifier isListed(address assestAddress, uint256 tokenId) {
-        Listing memory listing = listings[assestAddress][tokenId];
-        if (listing.price <= 0) {
-            revert RealEstateMarketplace__NotListed(assestAddress, tokenId);
+    modifier isListed(uint256 tokenId) {
+        if (listings[tokenId].price <= 0) {
+            revert NotListed(tokenId);
         }
         _;
     }
 
-    function listAssest(address assestAddress, uint256 tokenId, uint256 price)
-        external
-        notListed(assestAddress, tokenId, msg.sender)
-        isOwner(assestAddress, tokenId, msg.sender)
-    {
+    function listAssest(uint256 tokenId, uint256 price) external notListed(tokenId) isOwner(tokenId, msg.sender) {
         if (price <= 0) {
-            revert RealEstateMarketplace__PriceMustnotBeZero();
+            revert PriceMustBeAboveZero();
         }
 
-        IERC721 assest = IERC721(assestAddress);
-        if (assest.getApproved(tokenId) != address(this)) {
-            revert RealEstateMarketplace__NotApprovedForMarketplace();
+        if (assestContract.getApproved(tokenId) != address(this)) {
+            revert NotApprovedForMarketplace();
         }
 
-        listings[assestAddress][tokenId] = Listing(price, msg.sender);
-        emit AssestListed(msg.sender, assestAddress, tokenId, price);
+        listings[tokenId] = Listing(price, msg.sender);
+        emit AssestListed(msg.sender, tokenId, price);
     }
 
-    function buyAssest(address assestAddress, uint256 tokenId)
-        external
-        payable
-        nonReentrant
-        isListed(assestAddress, tokenId)
-    {
-        Listing memory listedAssest = listings[assestAddress][tokenId];
+    function buyAssest(uint256 tokenId) external payable nonReentrant isListed(tokenId) {
+        Listing memory listedAssest = listings[tokenId];
         if (msg.value < listedAssest.price) {
-            revert RealEstateMarketplace__PriceNotMet(assestAddress, tokenId, listedAssest.price);
+            revert PriceNotMet(tokenId, listedAssest.price);
         }
-        proceeds[listedAssest.seller] = proceeds[listedAssest.seller] + msg.value;
-        delete(listings[assestAddress][tokenId]);
-        IERC721(assestAddress).safeTransferFrom(listedAssest.seller, msg.sender, tokenId);
-        emit AssestBought(msg.sender, assestAddress, tokenId, listedAssest.price);
+
+        proceeds[listedAssest.seller] += msg.value;
+        delete listings[tokenId];
+        assestContract.safeTransferFrom(listedAssest.seller, msg.sender, tokenId);
+
+        emit AssestBought(msg.sender, tokenId, listedAssest.price);
     }
 
-    function cancelListing(address assestAddress, uint256 tokenId)
-        external
-        isOwner(assestAddress, tokenId, msg.sender)
-    {
-        delete(listings[assestAddress][tokenId]);
-        emit AssestCanceled(msg.sender, assestAddress, tokenId);
+    function cancelListing(uint256 tokenId) external isOwner(tokenId, msg.sender) {
+        delete listings[tokenId];
+        emit AssestCanceled(msg.sender, tokenId);
     }
 
-    function updateListing(address assestAddress, uint256 tokenId, uint256 newPrice)
-        external
-        isOwner(assestAddress, tokenId, msg.sender)
-    {
-        listings[assestAddress][tokenId].price = newPrice;
-        emit AssestListed(msg.sender, assestAddress, tokenId, newPrice);
+    function updateListing(uint256 tokenId, uint256 newPrice) external isOwner(tokenId, msg.sender) {
+        listings[tokenId].price = newPrice;
+        emit AssestListed(msg.sender, tokenId, newPrice);
     }
 
     function withdrawProceeds() external {
         uint256 proceed = proceeds[msg.sender];
         if (proceed <= 0) {
-            revert RealEstateMarketplace__NoProceeds();
+            revert NoProceeds();
         }
+
         proceeds[msg.sender] = 0;
         (bool success,) = payable(msg.sender).call{value: proceed}("");
         require(success, "Transfer failed");
     }
 
-    function getListing(address assestAddress, uint256 tokenId) external view returns (Listing memory) {
-        return listings[assestAddress][tokenId];
+    function getListing(uint256 tokenId) external view returns (Listing memory) {
+        return listings[tokenId];
     }
+
+    // Events
+    event AssestListed(address indexed seller, uint256 indexed tokenId, uint256 price);
+    event AssestBought(address indexed buyer, uint256 indexed tokenId, uint256 price);
+    event AssestCanceled(address indexed seller, uint256 indexed tokenId);
 }
