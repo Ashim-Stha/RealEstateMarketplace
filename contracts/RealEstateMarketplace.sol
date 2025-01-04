@@ -11,6 +11,7 @@ error RealEstateMarketplace__AlreadyListed(address assestAddress, uint256 tokenI
 error RealEstateMarketplace__NotOwner();
 error RealEstateMarketplace__NotListed(address assestAddress, uint256 tokenId);
 error RealEstateMarketplace__PriceNotMet(address assestAddress, uint256 tokenId, uint256 price);
+error RealEstateMarketplace__NoProceeds();
 
 contract RealEstateMarketplace is ReentrancyGuard {
     struct Listing {
@@ -21,7 +22,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
     //Events
     event AssestListed(address indexed seller, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
     event AssestBought(address indexed buyer, address indexed assestAddress, uint256 indexed tokenId, uint256 price);
-    event AssestCanceled(address indexed seller,address indexed assestAddress,uint256 indexed tokenId);
+    event AssestCanceled(address indexed seller, address indexed assestAddress, uint256 indexed tokenId);
 
     mapping(address => mapping(uint256 => Listing)) private listings;
     mapping(address => uint256) private proceeds;
@@ -86,13 +87,33 @@ contract RealEstateMarketplace is ReentrancyGuard {
         emit AssestBought(msg.sender, assestAddress, tokenId, listedAssest.price);
     }
 
-    function cancelListing(address assestAddress,uint256 tokenId) external isOwner(assestAddress, tokenId, msg.sender){
+    function cancelListing(address assestAddress, uint256 tokenId)
+        external
+        isOwner(assestAddress, tokenId, msg.sender)
+    {
         delete(listings[assestAddress][tokenId]);
-        emit AssestCanceled(msg.sender,assestAddress,tokenId);
+        emit AssestCanceled(msg.sender, assestAddress, tokenId);
     }
 
-    function updateListing(address assestAddress,uint256 tokenId,uint256 newPrice) isOwner(assestAddress, tokenId, msg.sender){
-        listings[assestAddress][tokenId].price=newPrice;
-        emit ItemListed(msg.sender,assestAddress,tokenId,newPrice);
+    function updateListing(address assestAddress, uint256 tokenId, uint256 newPrice)
+        external
+        isOwner(assestAddress, tokenId, msg.sender)
+    {
+        listings[assestAddress][tokenId].price = newPrice;
+        emit AssestListed(msg.sender, assestAddress, tokenId, newPrice);
+    }
+
+    function withdrawProceeds() external {
+        uint256 proceed = proceeds[msg.sender];
+        if (proceed <= 0) {
+            revert RealEstateMarketplace__NoProceeds();
+        }
+        proceeds[msg.sender] = 0;
+        (bool success,) = payable(msg.sender).call{value: proceed}("");
+        require(success, "Transfer failed");
+    }
+
+    function getListing(address assestAddress, uint256 tokenId) external view returns (Listing memory) {
+        return listings[assestAddress][tokenId];
     }
 }
