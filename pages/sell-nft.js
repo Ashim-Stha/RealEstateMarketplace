@@ -278,6 +278,65 @@ export default function Home() {
                 text="listItem"
                 type="button"
             />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: realEstateMarketplaceAbi,
+                            contractAddress: realEstateMarketplaceAddress,
+                            functionName: "buyItem",
+                            msgValue: "1",
+                            params: {
+                                tokenId: "1",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: () => handleWithdrawSuccess(),
+                    })
+                }}
+                text="buyItem"
+                type="button"
+            />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: realEstateMarketplaceAbi,
+                            contractAddress: realEstateMarketplaceAddress,
+                            functionName: "cancelListing",
+                            params: {
+                                tokenId: "1",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: () => handleWithdrawSuccess(),
+                    })
+                }}
+                text="cancelListing"
+                type="button"
+            />
+
+            <Button
+                onClick={() => {
+                    runContractFunction({
+                        params: {
+                            abi: realEstateMarketplaceAbi,
+                            contractAddress: realEstateMarketplaceAddress,
+                            functionName: "updateListing",
+                            params: {
+                                tokenId: "1",
+                                newPrice: "2",
+                            },
+                        },
+                        onError: (error) => console.log(error),
+                        onSuccess: () => handleWithdrawSuccess(),
+                    })
+                }}
+                text="cancelListing"
+                type="button"
+            />
         </div>
     )
 }
