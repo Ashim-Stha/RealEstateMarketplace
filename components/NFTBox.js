@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useWeb3Contract, useMoralis } from "react-moralis"
-import nftMarketplaceAbi from "../constants/NftMarketplace.json"
-import nftAbi from "../constants/BasicNft.json"
+import realEstateMarketplaceAbi from "../constants/RealEstateMarketplace.json"
+import assestAbi from "../constants/Assest.json"
 import Image from "next/image"
 import { Card, useNotification } from "web3uikit"
 import { ethers } from "ethers"
@@ -22,7 +22,14 @@ const truncateStr = (fullStr, strLen) => {
     )
 }
 
-export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress, seller }) {
+export default function NFTBox({
+    price,
+    nftAddress,
+    assestAddress,
+    tokenId,
+    marketplaceAddress,
+    seller,
+}) {
     const { isWeb3Enabled, account } = useMoralis()
     const [imageURI, setImageURI] = useState("")
     const [tokenName, setTokenName] = useState("")
@@ -32,16 +39,26 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
     const dispatch = useNotification()
 
     const { runContractFunction: getTokenURI } = useWeb3Contract({
-        abi: nftAbi,
-        contractAddress: nftAddress,
+        abi: assestAbi,
+        contractAddress: assestAddress,
         functionName: "tokenURI",
         params: {
             tokenId: tokenId,
         },
     })
 
+    const { runContractFunction: mintNft } = useWeb3Contract({
+        abi: assestAbi,
+        contractAddress: nftAddress,
+        functionName: "mintNft",
+        params: {
+            tokenUri: "ashim",
+            citizenshipId: 7,
+        },
+    })
+
     const { runContractFunction: buyItem } = useWeb3Contract({
-        abi: nftMarketplaceAbi,
+        abi: realEstateMarketplaceAbi,
         contractAddress: marketplaceAddress,
         functionName: "buyItem",
         msgValue: price,
@@ -86,6 +103,15 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
         isOwnedByUser
             ? setShowModal(true)
             : buyItem({
+                  onError: (error) => console.log(error),
+                  onSuccess: () => handleBuyItemSuccess(),
+              })
+    }
+
+    const handleMintClick = () => {
+        isOwnedByUser
+            ? setShowModal(true)
+            : mintNft({
                   onError: (error) => console.log(error),
                   onSuccess: () => handleBuyItemSuccess(),
               })

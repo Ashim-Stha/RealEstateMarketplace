@@ -15,6 +15,9 @@ export default function Header() {
                 <Link href="/property-Listing">
                     <a className="mr-4 p-6">Property</a>
                 </Link>
+                <Link href="/OwnerDetailForm">
+                    <a className="mr-4 p-6">ListingProperty</a>
+                </Link>
                 <ConnectButton moralisAuth={false} />
             </div>
         </nav>

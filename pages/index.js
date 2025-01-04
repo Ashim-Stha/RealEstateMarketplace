@@ -8,7 +8,10 @@ import { useQuery } from "@apollo/client"
 export default function Home() {
     const { chainId, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : null
-    const marketplaceAddress = chainId ? networkMapping[chainString].NftMarketplace[0] : null
+    const marketplaceAddress = chainId
+        ? networkMapping[chainString].RealEstateMarketplace[0]
+        : null
+    const assestAddress = chainId ? networkMapping[chainString].Assest[0] : null
 
     const { loading, error, data: listedNfts } = useQuery(GET_ACTIVE_ITEMS)
 
@@ -26,6 +29,7 @@ export default function Home() {
                                 <NFTBox
                                     price={price}
                                     nftAddress={nftAddress}
+                                    assestAddress={assestAddress}
                                     tokenId={tokenId}
                                     marketplaceAddress={marketplaceAddress}
                                     seller={seller}
