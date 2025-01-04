@@ -255,7 +255,7 @@ export default function Home() {
                         onSuccess: (result) => handleGetTokenUri(result),
                     })
                 }}
-                text="getTokenUri"
+                text="approve"
                 type="button"
             />
         </div>
