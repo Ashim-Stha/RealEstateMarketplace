@@ -46,6 +46,7 @@ export default function Home() {
             return items.map((item) => ({
                 price: item.price.toString(),
                 seller: item.seller,
+                tokenId: tokenId,
             }))
         } catch (error) {
             console.error("Error fetching listed items:", error)
@@ -63,6 +64,7 @@ export default function Home() {
                     listedNfts.map(({ price, seller }, index) => (
                         <NFTBox
                             key={index}
+                            tokenId={tokenId}
                             price={price}
                             seller={seller}
                             // Pass additional props as required
