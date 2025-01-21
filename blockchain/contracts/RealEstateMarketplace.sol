@@ -18,11 +18,19 @@ contract RealEstateMarketplace is ReentrancyGuard {
         address seller;
     }
 
+    struct ListedItem {
+        uint256 tokenId;
+        uint256 price;
+        address seller;
+        string tokenUri;
+        uint256 citizenshipId;  // Assuming you have a method to get this info
+    }
+
     IERC721 private immutable assestContract;
     mapping(uint256 => Listing) private listings;
     mapping(address => uint256) private proceeds;
 
-    uint256[] private listedTokenIds; // Array to track listed token IDs
+    uint256[] private listedTokenIds;
 
     constructor(address _assestContract) {
         assestContract = IERC721(_assestContract);
@@ -60,7 +68,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
         }
 
         listings[tokenId] = Listing(price, msg.sender);
-        listedTokenIds.push(tokenId); // Add to the array
+        listedTokenIds.push(tokenId);
         emit ItemListed(msg.sender, tokenId, price);
     }
 
@@ -72,7 +80,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
 
         proceeds[listedAssest.seller] += msg.value;
         delete listings[tokenId];
-        _removeTokenId(tokenId); // Remove from the array
+        _removeTokenId(tokenId);
         assestContract.safeTransferFrom(listedAssest.seller, msg.sender, tokenId);
 
         emit ItemBought(msg.sender, tokenId, listedAssest.price);
@@ -80,7 +88,7 @@ contract RealEstateMarketplace is ReentrancyGuard {
 
     function cancelListing(uint256 tokenId) external isOwner(tokenId, msg.sender) {
         delete listings[tokenId];
-        _removeTokenId(tokenId); // Remove from the array
+        _removeTokenId(tokenId);
         emit ItemCanceled(msg.sender, tokenId);
     }
 
@@ -108,13 +116,22 @@ contract RealEstateMarketplace is ReentrancyGuard {
         return proceeds[seller];
     }
 
-    function getAllListedItems() external view returns (Listing[] memory) {
+    // Updated function to include tokenUri and citizenshipId along with Listing
+    function getAllListedItems() external view returns (ListedItem[] memory) {
         uint256 totalListed = listedTokenIds.length;
-        Listing[] memory allListings = new Listing[](totalListed);
+        ListedItem[] memory allListings = new ListedItem[](totalListed);
 
         for (uint256 i = 0; i < totalListed; i++) {
             uint256 tokenId = listedTokenIds[i];
-            allListings[i] = listings[tokenId];
+            Listing memory listing = listings[tokenId];
+
+            // Fetch token URI from the ERC721 contract
+            string memory tokenUri = assestContract.tokenURI(tokenId);
+
+            // Assuming you have a function to get the citizenshipId (it can be another contract or logic)
+            uint256 citizenshipId = getCitizenshipId(tokenId);
+
+            allListings[i] = ListedItem(tokenId, listing.price, listing.seller, tokenUri, citizenshipId);
         }
 
         return allListings;
@@ -131,6 +148,12 @@ contract RealEstateMarketplace is ReentrancyGuard {
                 break;
             }
         }
+    }
+
+    // A placeholder function for citizenshipId (you can implement it according to your needs)
+    function getCitizenshipId(uint256 tokenId) internal view returns (uint256) {
+        // This can be another contract call or storage lookup
+        return 1234; // Example placeholder
     }
 
     // Events
