@@ -87,12 +87,12 @@ server/
 
 3. Compile the smart contracts:
    ```sh
-   npx hardhat compile
+   yarn hardhat compile
    ```
 
 4. Deploy the smart contracts:
    ```sh
-   npx hardhat run scripts/deploy.js --network <network-name>
+   yarn hardhat deploy --network <network-name>
    ```
 
 ### Frontend
@@ -107,11 +107,7 @@ server/
    npm install
    ```
 
-3. Create a 
-
-.env
-
- file and add your environment variables:
+3. Create a .env file and add your environment variables:
    ```sh
    cp .env.example .env
    ```
@@ -133,11 +129,7 @@ server/
    npm install
    ```
 
-3. Create a 
-
-.env
-
- file and add your environment variables:
+3. Create a .env file and add your environment variables:
    ```sh
    cp .env.example .env
    ```
