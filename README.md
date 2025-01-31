@@ -139,6 +139,54 @@ server/
    node index.js
    ```
 
+## Frontend Integration with Blockchain
+
+The frontend interacts with the blockchain using the `react-moralis` library to connect to the Ethereum network and execute smart contract functions. The integration involves the following steps:
+
+1. **Connecting to the Wallet**: The frontend uses Metamask to connect to the user's Ethereum wallet.
+2. **Executing Smart Contract Functions**: The `useWeb3Contract` hook from `react-moralis` is used to call smart contract functions such as minting NFTs, listing items, and buying items.
+3. **Handling Responses**: The frontend handles the responses from the smart contract functions, updating the UI accordingly.
+
+Example of minting an NFT:
+```javascript
+const handleMintNft = (data) => {
+    const tokenUri = data.data[0].inputResult;
+    const citizenshipId = parseInt(data.data[1].inputResult);
+
+    runContractFunction({
+        params: {
+            abi: assestAbi,
+            contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            functionName: "mintNft",
+            params: {
+                tokenUri: tokenUri,
+                citizenshipId: citizenshipId,
+            },
+        },
+        onSuccess: () => alert("NFT Minted Successfully!"),
+        onError: (error) => console.log(error),
+    });
+};
+```
+
+## Server
+
+The server part of the application handles file uploads and interacts with IPFS through Pinata for decentralized storage. It uses Express.js for handling HTTP requests.
+
+### Routes
+
+- **POST /upload**: This route handles file uploads. It uses the `multer` middleware to handle file uploads and the `uploadController` to process the uploaded files.
+
+### Middleware
+
+- **multer.js**: Configures the `multer` middleware for handling file uploads.
+- **uploadToPinata.js**: Contains functions for uploading files and metadata to Pinata.
+
+### Controllers
+
+- **uploadController.js**: Contains the logic for processing uploaded files and storing them on IPFS via Pinata.
+
+
 ## Usage
 
 1. Open the frontend application in your browser.
